@@ -225,17 +225,6 @@ setup/skills/
 
 [setup/skills/g-ark-source-distiller/SKILL.md](./setup/skills/g-ark-source-distiller/SKILL.md)
 
-## 看板娘组件路线图
-
-GitHub README 不能直接运行交互脚本，所以 ObsiChan 暂时只在 README 中保留看板娘视觉风格。后续如果做文档站或 Obsidian 插件 UI，可以考虑这些 Live2D 方案：
-
-| 组件 | 适合场景 | 备注 |
-| --- | --- | --- |
-| [oh-my-live2d](https://www.npmjs.com/package/oh-my-live2d) | 文档站、Vite/React/Vue 项目、快速挂载看板娘 | 支持 CDN/ES Module，引入简单，适合 ObsiChan Docs 站点 |
-| [stevenjoezhang/live2d-widget](https://github.com/stevenjoezhang/live2d-widget) | 经典网页角落看板娘 | 生态成熟，适合静态站点 |
-| [guansss/pixi-live2d-display](https://github.com/guansss/pixi-live2d-display) | 自定义交互、Canvas/WebGL、复杂 UI | 更底层，更适合后续做 Obsidian 插件界面 |
-
-注意：Live2D 模型本身通常有独立版权。引入看板娘时要确认模型授权，避免把不明来源模型打进仓库。
 
 ## 安装脚本
 
@@ -245,15 +234,6 @@ setup/install.sh   macOS / Linux Bash
 setup/update.ps1   Windows 更新脚本
 setup/update.sh    macOS / Linux 更新脚本
 ```
-
-脚本会自动：
-
-- 创建 vault 目录结构
-- 写入 Obsidian 配置
-- 写入系统文件和 starter MOC
-- 下载 Claudian 插件
-- 下载 Codex skills
-- 尝试配置 Claudian 使用 Codex provider
 
 ## 验收
 
