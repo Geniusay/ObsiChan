@@ -1,0 +1,17 @@
+.DS_Store
+Thumbs.db
+
+# Local Obsidian workspace state
+.obsidian/workspace.json
+.obsidian/workspaces.json
+.trash/
+
+# Local Claudian/Codex runtime state from generated vaults
+.claudian/sessions/
+.claudian/sessions_backup/
+.claude/
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
