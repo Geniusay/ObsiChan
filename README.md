@@ -9,8 +9,6 @@
 
   <br />
 
-  <img src="https://readme-typing-svg.demolab.com?font=Orbitron&weight=700&size=23&pause=1100&color=06B6D4&center=true&vCenter=true&width=840&lines=Capture+%E2%86%92+Distill+%E2%86%92+Connect+%E2%86%92+Create;Obsidian+Powered+External+Brain;Codex+Skills+for+Your+Knowledge+Vault;ObsiChan+is+watching+your+Inbox" alt="Typing SVG" />
-
   <p>
     一只住进 Obsidian 的知识看板娘：帮你把灵感、资料、概念、项目和 AI 协作整理成可持续生长的外置大脑。
   </p>
