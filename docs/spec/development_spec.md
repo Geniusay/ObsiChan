@@ -33,6 +33,8 @@ ObsiChan/
   setup/
     install.ps1
     install.sh
+    update.ps1
+    update.sh
     skills/
       g-ark-vault-steward/
         SKILL.md
@@ -56,6 +58,8 @@ ObsiChan/
 | --- | --- |
 | `setup/install.ps1` | Windows PowerShell 安装脚本 |
 | `setup/install.sh` | macOS/Linux Bash 安装脚本 |
+| `setup/update.ps1` | Windows PowerShell 更新脚本 |
+| `setup/update.sh` | macOS/Linux Bash 更新脚本 |
 | `setup/skills/*/SKILL.md` | 可单独更新的 vault-level Codex skills |
 
 ### 3.3 `docs/spec/`
@@ -89,6 +93,13 @@ setup/install.sh
 - 下载同一仓库分支下的 skills。
 - 尝试配置 Claudian 的 Codex provider。
 
+更新脚本必须遵守更严格的非破坏性原则：
+
+- 默认只更新 `.codex/skills`。
+- 默认只补建缺失目录，例如 `20_Sources/Collections`。
+- 默认不覆盖 `00_System`、用户笔记、MOC、项目和输出。
+- 只有显式传入 `-UpdateClaudian` 或 `UPDATE_CLAUDIAN=1` 时，才更新 Claudian 插件文件。
+
 ### 4.2 参数规范
 
 PowerShell 脚本必须支持：
@@ -101,6 +112,16 @@ PowerShell 脚本必须支持：
 -CodexPath
 ```
 
+PowerShell 更新脚本必须支持：
+
+```powershell
+-VaultPath
+-Branch
+-RepoRawBase
+-ClaudianVersion
+-UpdateClaudian
+```
+
 Bash 脚本必须支持环境变量：
 
 ```bash
@@ -109,6 +130,16 @@ BRANCH
 REPO_RAW_BASE
 CLAUDIAN_VERSION
 CODEX_PATH
+```
+
+Bash 更新脚本必须支持环境变量：
+
+```bash
+VAULT_PATH
+BRANCH
+REPO_RAW_BASE
+CLAUDIAN_VERSION
+UPDATE_CLAUDIAN
 ```
 
 ### 4.3 脚本安全规范
@@ -159,6 +190,23 @@ https://raw.githubusercontent.com/Geniusay/ObsiChan/<branch>/setup/...
 ```text
 setup/skills/<skill-name>/SKILL.md
 ```
+
+### 5.1.1 Skills 更新机制
+
+已安装用户通过以下脚本更新 skills：
+
+```text
+setup/update.ps1
+setup/update.sh
+```
+
+更新脚本从 GitHub raw 下载仓库内的 `setup/skills/*/SKILL.md` 到目标 vault 的 `.codex/skills`。
+
+开发者更新 skill 后，必须确认：
+
+- 安装脚本仍能下载新 skill。
+- 更新脚本能覆盖旧 skill。
+- README 和 `setup_tutorial.md` 中的 skill 名称仍正确。
 
 安装后的 vault 内：
 
@@ -264,7 +312,23 @@ _templates/
 .codex/skills/
 ```
 
-### 7.1 暂不默认创建的目录
+### 7.1 来源笔记子目录规则
+
+`20_Sources` 按来源形态归档，不按主题归档。
+
+| 来源形态 | 默认目录 |
+| --- | --- |
+| book | `20_Sources/Books` |
+| article | `20_Sources/Articles` |
+| paper | `20_Sources/Papers` |
+| video/transcript | `20_Sources/Videos` |
+| course | `20_Sources/Courses` |
+| document | `20_Sources/Documents` |
+| resource-list/collection/website-list | `20_Sources/Collections` |
+
+主题关系由 `topics`、`related` 和 `40_Maps` 表达。不要默认创建 `20_Sources/强化学习` 或 `20_Sources/前端设计` 这类主题文件夹。
+
+### 7.2 暂不默认创建的目录
 
 | 目录 | 何时加入 |
 | --- | --- |
@@ -350,6 +414,8 @@ fix(claudian): avoid stale Claude provider state
 
 - `setup/install.ps1`
 - `setup/install.sh`
+- `setup/update.ps1`
+- `setup/update.sh`
 - `setup_tutorial.md`
 - `README.md` 中相关说明，如有
 
@@ -369,6 +435,8 @@ setup_tutorial.md
 docs/spec/development_spec.md
 setup/install.ps1
 setup/install.sh
+setup/update.ps1
+setup/update.sh
 setup/skills/g-ark-vault-steward/SKILL.md
 setup/skills/g-ark-source-distiller/SKILL.md
 ```

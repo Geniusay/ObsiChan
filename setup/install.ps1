@@ -67,7 +67,7 @@ Write-Info "Creating vault at $VaultPath"
 $dirs = @(
   "00_System",
   "10_Inbox",
-  "20_Sources\Books","20_Sources\Articles","20_Sources\Papers","20_Sources\Videos","20_Sources\Courses","20_Sources\Documents",
+  "20_Sources\Books","20_Sources\Articles","20_Sources\Papers","20_Sources\Videos","20_Sources\Courses","20_Sources\Documents","20_Sources\Collections",
   "30_Notes\Concepts","30_Notes\Questions","30_Notes\Models","30_Notes\Claims","30_Notes\People","30_Notes\Terms",
   "40_Maps",
   "50_Projects\Active","50_Projects\Waiting","50_Projects\Completed",
@@ -192,6 +192,22 @@ Write-TextFile -Path (Join-Path $VaultPath "00_System\SCHEMA.md") -Content @'
 | `70_Outputs` | 产出物 |
 | `80_Assets` | 附件资源 |
 | `_templates` | 模板 |
+
+## 来源笔记子目录规则
+
+`20_Sources` 优先按来源形态归档，而不是按主题归档。主题关系使用 `topics`、`related` 和 `40_Maps` 表达。
+
+| source_type | 推荐位置 |
+| --- | --- |
+| `book` | `20_Sources/Books` |
+| `article` | `20_Sources/Articles` |
+| `paper` | `20_Sources/Papers` |
+| `video` | `20_Sources/Videos` |
+| `course` | `20_Sources/Courses` |
+| `document` | `20_Sources/Documents` |
+| `resource-list` / `collection` / `website-list` | `20_Sources/Collections` |
+
+不要为每个主题随意创建新文件夹；主题导航交给 MOC 和链接。
 
 ## 状态约定
 

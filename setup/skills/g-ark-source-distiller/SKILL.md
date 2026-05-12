@@ -33,6 +33,20 @@ For each source:
 7. Update relevant MOCs in `40_Maps/`.
 8. Add review items to `00_System/REVIEW.md` if human judgment is needed.
 
+## Source Folder Policy
+
+Route source notes by source form:
+
+- `book` -> `20_Sources/Books`
+- `article` -> `20_Sources/Articles`
+- `paper` -> `20_Sources/Papers`
+- `video` or `transcript` -> `20_Sources/Videos`
+- `course` -> `20_Sources/Courses`
+- `document` -> `20_Sources/Documents`
+- `resource-list`, `collection`, `website-list`, learning resource roundup -> `20_Sources/Collections`
+
+Do not create topic folders by default. A note about multi-armed bandits should not create `20_Sources/Reinforcement Learning`; it should go to the source-form folder and connect to `[[MOC - AI]]`, `[[MOC - 学习]]`, or a more specific MOC through links.
+
 ## Source Note Template
 
 Use this shape for source notes:

@@ -115,12 +115,16 @@ CODEX_PATH="$(which codex)" VAULT_PATH="$HOME/Documents/G-Ark" bash /tmp/obsicha
 ```text
 setup/install.ps1
 setup/install.sh
+setup/update.ps1
+setup/update.sh
 ```
 
 对应 GitHub 下载地址：
 
 - Windows: `https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/install.ps1`
 - macOS / Linux: `https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/install.sh`
+- Windows 更新: `https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/update.ps1`
+- macOS / Linux 更新: `https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/update.sh`
 
 脚本会自动完成：
 
@@ -131,6 +135,47 @@ setup/install.sh
 - 下载并安装 Claudian。
 - 从 GitHub 下载 vault-level Codex skills。
 - 尝试写入 Claudian Codex provider 配置。
+
+### 4.1 已安装用户如何更新
+
+ObsiChan 的 skills 会持续更新。已安装用户不需要重装整个 vault，可以只运行更新脚本。
+
+Windows PowerShell：
+
+```powershell
+$script = "$env:TEMP\obsichan-update.ps1"
+Invoke-WebRequest "https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/update.ps1" -OutFile $script
+powershell -ExecutionPolicy Bypass -File $script -VaultPath "$HOME\Documents\G-Ark"
+```
+
+macOS / Linux：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/update.sh -o /tmp/obsichan-update.sh
+VAULT_PATH="$HOME/Documents/G-Ark" bash /tmp/obsichan-update.sh
+```
+
+默认更新内容：
+
+- `.codex/skills/g-ark-vault-steward/SKILL.md`
+- `.codex/skills/g-ark-source-distiller/SKILL.md`
+- 补建 `20_Sources/Collections`
+
+默认不会覆盖你的笔记、MOC、项目、输出文件，也不会重写 `00_System`。
+
+如果你也想更新 Claudian 插件：
+
+Windows：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File $script -VaultPath "$HOME\Documents\G-Ark" -UpdateClaudian
+```
+
+macOS / Linux：
+
+```bash
+UPDATE_CLAUDIAN=1 VAULT_PATH="$HOME/Documents/G-Ark" bash /tmp/obsichan-update.sh
+```
 
 ## 5. Skills 在哪里？
 
@@ -237,6 +282,26 @@ $g-ark-source-distiller
 ```
 
 ## 9. 常见问题
+
+### 9.0 为什么 `resource-list` 没有进入子文件夹？
+
+早期版本的 `20_Sources` 只创建了 Books、Articles、Papers、Videos、Courses、Documents。像“资料汇总”“网站清单”“学习资源合集”这种 `source_type: resource-list` 没有稳定落点，所以会留在 `20_Sources` 根目录。
+
+新版规则增加：
+
+```text
+20_Sources/Collections
+```
+
+用于存放：
+
+- 学习资料汇总
+- 网站清单
+- 资源合集
+- curated links
+- `source_type: resource-list`
+
+不建议为每个主题创建大文件夹，例如 `20_Sources/强化学习`、`20_Sources/前端设计`。主题关系应该交给 `topics`、`related` 和 `40_Maps`，否则文件夹会很快膨胀。
 
 ### 9.1 Claudian 报 `Claude Code native binary not found`
 

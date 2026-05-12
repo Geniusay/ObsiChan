@@ -57,7 +57,7 @@ info "Creating vault at $VAULT_PATH"
 mkdir -p \
   "$VAULT_PATH/00_System" \
   "$VAULT_PATH/10_Inbox" \
-  "$VAULT_PATH/20_Sources/Books" "$VAULT_PATH/20_Sources/Articles" "$VAULT_PATH/20_Sources/Papers" "$VAULT_PATH/20_Sources/Videos" "$VAULT_PATH/20_Sources/Courses" "$VAULT_PATH/20_Sources/Documents" \
+  "$VAULT_PATH/20_Sources/Books" "$VAULT_PATH/20_Sources/Articles" "$VAULT_PATH/20_Sources/Papers" "$VAULT_PATH/20_Sources/Videos" "$VAULT_PATH/20_Sources/Courses" "$VAULT_PATH/20_Sources/Documents" "$VAULT_PATH/20_Sources/Collections" \
   "$VAULT_PATH/30_Notes/Concepts" "$VAULT_PATH/30_Notes/Questions" "$VAULT_PATH/30_Notes/Models" "$VAULT_PATH/30_Notes/Claims" "$VAULT_PATH/30_Notes/People" "$VAULT_PATH/30_Notes/Terms" \
   "$VAULT_PATH/40_Maps" \
   "$VAULT_PATH/50_Projects/Active" "$VAULT_PATH/50_Projects/Waiting" "$VAULT_PATH/50_Projects/Completed" \
@@ -170,6 +170,22 @@ write_file "$VAULT_PATH/00_System/SCHEMA.md" <<'EOF'
 | `70_Outputs` | 产出物 |
 | `80_Assets` | 附件资源 |
 | `_templates` | 模板 |
+
+## 来源笔记子目录规则
+
+`20_Sources` 优先按来源形态归档，而不是按主题归档。主题关系使用 `topics`、`related` 和 `40_Maps` 表达。
+
+| source_type | 推荐位置 |
+| --- | --- |
+| `book` | `20_Sources/Books` |
+| `article` | `20_Sources/Articles` |
+| `paper` | `20_Sources/Papers` |
+| `video` | `20_Sources/Videos` |
+| `course` | `20_Sources/Courses` |
+| `document` | `20_Sources/Documents` |
+| `resource-list` / `collection` / `website-list` | `20_Sources/Collections` |
+
+不要为每个主题随意创建新文件夹；主题导航交给 MOC 和链接。
 EOF
 
 write_file "$VAULT_PATH/00_System/WORKFLOW.md" <<'EOF'
@@ -301,9 +317,6 @@ if CODEX_RESOLVED="$(resolve_codex_path)"; then
       "reasoningSummary": "detailed",
       "environmentVariables": "",
       "environmentHash": "",
-      "installationMethodsByHost": {
-        "$HOSTNAME_VALUE": "native-windows"
-      },
       "wslDistroOverridesByHost": {}
     }
   },

@@ -44,6 +44,7 @@ Use this routing decision tree:
 
 - Temporary thought, pasted fragment, or unclear item -> `10_Inbox`
 - Summary of an external article, book, paper, video, document, meeting, transcript -> `20_Sources`
+- Curated resource list, website list, learning resource roundup, or `source_type: resource-list` -> `20_Sources/Collections`
 - One reusable idea in the user's own words -> `30_Notes/Concepts`
 - Open research question -> `30_Notes/Questions`
 - Framework, method, or thinking model -> `30_Notes/Models`
@@ -55,6 +56,22 @@ Use this routing decision tree:
 - PDF, image, audio, export, screenshot -> `80_Assets`
 
 When uncertain, put the content in `10_Inbox` and add a short reason.
+
+## Source Folder Policy
+
+`20_Sources` is organized by source form, not by topic. Use `topics`, `related`, and MOCs for thematic navigation.
+
+Use these stable folders:
+
+- `Books` for books
+- `Articles` for articles and blog posts
+- `Papers` for academic papers
+- `Videos` for videos and transcripts
+- `Courses` for courses
+- `Documents` for general documents
+- `Collections` for resource lists, website lists, curated link collections, and learning material roundups
+
+Do not create a new folder for every topic such as `Reinforcement Learning` or `Frontend Design` unless the user explicitly asks. Topic folders fragment the vault quickly; MOCs are better for topic navigation.
 
 ## Editing Principles
 
