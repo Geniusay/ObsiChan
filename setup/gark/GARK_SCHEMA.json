@@ -1,0 +1,678 @@
+{
+  "format": "g-ark-vault-schema",
+  "title": "G-Ark Vault Schema",
+  "schema_version": "2.0.0",
+  "canonical": true,
+  "last_updated": "2026-08-16",
+  "scope": {
+    "note_roots": [
+      "00_System",
+      "10_Inbox",
+      "20_Sources",
+      "30_Notes",
+      "40_Maps",
+      "50_Projects",
+      "60_Areas",
+      "70_Outputs"
+    ],
+    "excluded_paths": [
+      "_templates",
+      "80_Assets",
+      ".gark",
+      ".obsidian",
+      ".codex",
+      ".claude",
+      ".agents",
+      ".tmlbrain",
+      ".trash"
+    ]
+  },
+  "fields": {
+    "type": {
+      "type": "string",
+      "required": true,
+      "description": "Note kind; determines route, lifecycle statuses, and type-specific fields."
+    },
+    "status": {
+      "type": "string",
+      "required": true,
+      "description": "Lifecycle state. Allowed values are defined per note type."
+    },
+    "review_status": {
+      "type": "string",
+      "required": true,
+      "enum": [
+        "not-required",
+        "pending",
+        "approved",
+        "needs-revision",
+        "rejected"
+      ],
+      "default": "not-required",
+      "description": "Human review state, independent of content lifecycle."
+    },
+    "ai_generated": {
+      "type": "boolean",
+      "required": false,
+      "description": "True when AI substantively generated or rewrote note content. Retained after review as provenance."
+    },
+    "created": {
+      "type": "date",
+      "required": true,
+      "format": "YYYY-MM-DD"
+    },
+    "updated": {
+      "type": "date",
+      "required": false,
+      "format": "YYYY-MM-DD"
+    },
+    "topics": {
+      "type": "array",
+      "items": "string",
+      "required": true,
+      "default": []
+    },
+    "summary": {
+      "type": "string",
+      "required": true,
+      "default": ""
+    },
+    "source": {
+      "type": "array",
+      "items": "wikilink-or-url",
+      "required": false
+    },
+    "related": {
+      "type": "array",
+      "items": "wikilink",
+      "required": false
+    },
+    "source_type": {
+      "type": "string",
+      "required": false,
+      "description": "Required for source notes; enum is defined in source_types."
+    },
+    "source_url": {
+      "type": "string",
+      "required": false
+    },
+    "source_urls": {
+      "type": "array",
+      "items": "string",
+      "required": false
+    },
+    "tags": {
+      "type": "array",
+      "items": "string",
+      "required": false,
+      "description": "Source or import labels preserved for provenance; not canonical G-Ark topics."
+    },
+    "title": {
+      "type": "string",
+      "required": false
+    },
+    "original_title": {
+      "type": "string",
+      "required": false
+    },
+    "published": {
+      "type": "string",
+      "required": false
+    },
+    "modified": {
+      "type": "string",
+      "required": false
+    },
+    "duration": {
+      "type": "string",
+      "required": false
+    },
+    "language": {
+      "type": "string",
+      "required": false
+    },
+    "original_path": {
+      "type": "string",
+      "required": false
+    },
+    "local_source_path": {
+      "type": "string",
+      "required": false
+    },
+    "author": {
+      "type": [
+        "string",
+        "array"
+      ],
+      "required": false
+    },
+    "confidence": {
+      "type": "string",
+      "required": false,
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "source_session": {
+      "type": "string",
+      "required": false,
+      "description": "Optional conversation or task identifier for captured knowledge."
+    },
+    "outcome": {
+      "type": "string",
+      "required": false
+    },
+    "next_action": {
+      "type": "string",
+      "required": false
+    },
+    "deadline": {
+      "type": "date",
+      "required": false,
+      "format": "YYYY-MM-DD"
+    },
+    "area": {
+      "type": "wikilink-or-string",
+      "required": false
+    },
+    "standard": {
+      "type": "string",
+      "required": false
+    },
+    "review_cycle": {
+      "type": "string",
+      "required": false,
+      "enum": [
+        "weekly",
+        "monthly",
+        "quarterly",
+        "yearly"
+      ]
+    },
+    "audience": {
+      "type": "string",
+      "required": false
+    },
+    "project": {
+      "type": "wikilink-or-string",
+      "required": false
+    },
+    "source_notes": {
+      "type": "array",
+      "items": "wikilink",
+      "required": false
+    }
+  },
+  "common_fields": {
+    "required": [
+      "type",
+      "status",
+      "review_status",
+      "created",
+      "topics",
+      "summary"
+    ],
+    "optional": [
+      "updated",
+      "ai_generated",
+      "related",
+      "source_session"
+    ]
+  },
+  "note_types": {
+    "system": {
+      "route": "00_System",
+      "statuses": [
+        "active",
+        "retired"
+      ],
+      "default_status": "active",
+      "required": [],
+      "optional": []
+    },
+    "inbox": {
+      "route": "10_Inbox",
+      "statuses": [
+        "inbox",
+        "processed",
+        "discarded"
+      ],
+      "default_status": "inbox",
+      "required": [],
+      "optional": [
+        "source",
+        "source_session"
+      ]
+    },
+    "source": {
+      "route": "20_Sources",
+      "statuses": [
+        "raw",
+        "distilled",
+        "archived"
+      ],
+      "default_status": "raw",
+      "required": [
+        "source_type"
+      ],
+      "optional": [
+        "author",
+        "source_url",
+        "source_urls",
+        "tags",
+        "title",
+        "original_title",
+        "published",
+        "modified",
+        "duration",
+        "language",
+        "original_path",
+        "local_source_path",
+        "related"
+      ]
+    },
+    "concept": {
+      "route": "30_Notes/Concepts",
+      "statuses": [
+        "seed",
+        "evergreen",
+        "retired"
+      ],
+      "default_status": "seed",
+      "required": [],
+      "optional": [
+        "source",
+        "related",
+        "confidence"
+      ]
+    },
+    "question": {
+      "route": "30_Notes/Questions",
+      "statuses": [
+        "open",
+        "exploring",
+        "answered",
+        "parked"
+      ],
+      "default_status": "open",
+      "required": [],
+      "optional": [
+        "source",
+        "related",
+        "confidence"
+      ]
+    },
+    "model": {
+      "route": "30_Notes/Models",
+      "statuses": [
+        "seed",
+        "evergreen",
+        "retired"
+      ],
+      "default_status": "seed",
+      "required": [],
+      "optional": [
+        "source",
+        "related",
+        "confidence"
+      ]
+    },
+    "claim": {
+      "route": "30_Notes/Claims",
+      "statuses": [
+        "seed",
+        "evergreen",
+        "retired"
+      ],
+      "default_status": "seed",
+      "required": [],
+      "optional": [
+        "source",
+        "related",
+        "confidence"
+      ]
+    },
+    "note": {
+      "route": "30_Notes",
+      "statuses": [
+        "seed",
+        "evergreen",
+        "retired"
+      ],
+      "default_status": "seed",
+      "required": [],
+      "optional": [
+        "source",
+        "related",
+        "confidence"
+      ]
+    },
+    "moc": {
+      "route": "40_Maps",
+      "statuses": [
+        "active",
+        "retired"
+      ],
+      "default_status": "active",
+      "required": [],
+      "optional": [
+        "related"
+      ]
+    },
+    "project": {
+      "route": "50_Projects",
+      "route_by_status": {
+        "active": "50_Projects/Active",
+        "waiting": "50_Projects/Waiting",
+        "completed": "50_Projects/Completed",
+        "cancelled": "50_Projects/Completed"
+      },
+      "statuses": [
+        "active",
+        "waiting",
+        "completed",
+        "cancelled"
+      ],
+      "default_status": "active",
+      "required": [
+        "outcome",
+        "next_action"
+      ],
+      "optional": [
+        "area",
+        "deadline",
+        "related"
+      ]
+    },
+    "area": {
+      "route": "60_Areas",
+      "statuses": [
+        "active",
+        "paused",
+        "retired"
+      ],
+      "default_status": "active",
+      "required": [
+        "standard",
+        "review_cycle"
+      ],
+      "optional": [
+        "related"
+      ]
+    },
+    "output": {
+      "route": "70_Outputs",
+      "statuses": [
+        "draft",
+        "published",
+        "archived"
+      ],
+      "default_status": "draft",
+      "required": [
+        "audience",
+        "source_notes"
+      ],
+      "optional": [
+        "project"
+      ]
+    },
+    "daily": {
+      "route": "10_Inbox",
+      "statuses": [
+        "active",
+        "closed"
+      ],
+      "default_status": "active",
+      "required": [],
+      "optional": []
+    },
+    "review": {
+      "route": "00_System",
+      "statuses": [
+        "active",
+        "completed"
+      ],
+      "default_status": "active",
+      "required": [],
+      "optional": []
+    }
+  },
+  "source_types": {
+    "book": {
+      "route": "20_Sources/Books"
+    },
+    "article": {
+      "route": "20_Sources/Articles"
+    },
+    "social-post": {
+      "route": "20_Sources/Articles"
+    },
+    "paper": {
+      "route": "20_Sources/Papers"
+    },
+    "video": {
+      "route": "20_Sources/Videos"
+    },
+    "podcast": {
+      "route": "20_Sources/Videos"
+    },
+    "course": {
+      "route": "20_Sources/Courses"
+    },
+    "document": {
+      "route": "20_Sources/Documents"
+    },
+    "transcript": {
+      "route": "20_Sources/Documents"
+    },
+    "meeting": {
+      "route": "20_Sources/Documents"
+    },
+    "website": {
+      "route": "20_Sources/Documents"
+    },
+    "resource-list": {
+      "route": "20_Sources/Collections"
+    },
+    "collection": {
+      "route": "20_Sources/Collections"
+    },
+    "website-list": {
+      "route": "20_Sources/Collections"
+    }
+  },
+  "directory_routes": {
+    "temporary_or_unclear": "10_Inbox",
+    "external_material": "20_Sources",
+    "reusable_personal_knowledge": "30_Notes",
+    "topic_navigation": "40_Maps",
+    "concrete_outcome": "50_Projects",
+    "ongoing_responsibility": "60_Areas",
+    "publishable_or_reusable_artifact": "70_Outputs",
+    "attachment_or_media": "80_Assets"
+  },
+  "taxonomy": {
+    "canonical_topics": [
+      "AI",
+      "个人知识管理",
+      "第二大脑",
+      "Obsidian",
+      "写作",
+      "学习",
+      "项目管理",
+      "产品",
+      "创业",
+      "引流",
+      "产品增长",
+      "职业",
+      "健康",
+      "财务",
+      "创作"
+    ],
+    "aliases": {
+      "PKM": "个人知识管理",
+      "知识管理": "个人知识管理",
+      "人工智能": "AI"
+    },
+    "new_topic_min_notes": 3,
+    "unknown_topic_policy": "suggest-existing-or-request-approval",
+    "relationship_preference": "Use wikilinks for specific relationships; use topics only for stable retrieval facets."
+  },
+  "policies": {
+    "precedence": [
+      "explicit_user_instruction",
+      "GARK_SCHEMA.json",
+      "mode_workflow",
+      "templates",
+      "agent_judgment"
+    ],
+    "naming": {
+      "files": "Use clear natural-language names; do not force identifiers or dates into long-lived note titles.",
+      "moc_pattern": "MOC - {topic}.md",
+      "attachments_root": "80_Assets"
+    },
+    "connections": {
+      "long_lived_note_min_connections": 1,
+      "accepted_connection_kinds": [
+        "source",
+        "moc",
+        "project",
+        "output"
+      ]
+    },
+    "provenance": {
+      "ai_generated_when": "AI substantively generates, summarizes, infers, or rewrites note content.",
+      "not_ai_generated_when": "AI only moves a file, preserves supplied text verbatim, or adds objective metadata.",
+      "new_ai_content_review_status": "pending",
+      "human_confirmation_review_status": "approved",
+      "preserve_ai_generated_after_review": true,
+      "unknown_provenance_policy": "Do not guess. Omit ai_generated and surface the uncertainty during audit."
+    },
+    "moc": {
+      "creation_requires_min_notes": 3,
+      "creation_requires_recurring_navigation_need": true,
+      "update_only_when_strongly_relevant": true,
+      "do_not_duplicate_note_body": true
+    },
+    "operations": {
+      "archive": {
+        "purpose": "Preserve supplied material and add only schema metadata.",
+        "max_new_notes_per_input": 1,
+        "allow_generated_body": false,
+        "derive_notes": false,
+        "update_moc": false,
+        "default_review_status": "not-required"
+      },
+      "distill": {
+        "purpose": "Create or update one traceable source note and only high-value derived knowledge.",
+        "derived_note_range": [
+          0,
+          3
+        ],
+        "derived_note_requires_reuse_value": true,
+        "generated_review_status": "pending",
+        "update_moc_only_if_threshold_met": true
+      },
+      "retrieve": {
+        "purpose": "Read and cite relevant vault knowledge without writing to the vault.",
+        "read_only": true,
+        "distinguish_existing_knowledge_from_new_reasoning": true,
+        "cite_note_paths": true
+      },
+      "capture": {
+        "purpose": "Persist a durable conversation conclusion with minimal write volume.",
+        "default_mode": "suggest",
+        "explicit_user_request_writes_directly": true,
+        "default_target": "10_Inbox",
+        "max_auto_candidates_per_session": 1,
+        "auto_candidate_requirements": [
+          "durable decision",
+          "verified reusable conclusion",
+          "stable user constraint",
+          "explicit project state"
+        ],
+        "never_capture": [
+          "sensitive information",
+          "temporary emotion",
+          "unverified speculation",
+          "ordinary small talk"
+        ],
+        "notify_after_write": true,
+        "generated_review_status": "pending"
+      },
+      "connect": {
+        "purpose": "Add only strongly relevant links or MOC entries.",
+        "minimal_changes": true
+      },
+      "review": {
+        "purpose": "Apply a human decision to pending AI content.",
+        "human_decision_required_for_approval": true
+      },
+      "audit": {
+        "purpose": "Report schema, route, link, review, and taxonomy issues.",
+        "read_only_by_default": true,
+        "fix_requires_explicit_request": true
+      }
+    }
+  },
+  "legacy_migrations": {
+    "version": 1,
+    "unknown_policy": "report-and-leave-unchanged",
+    "defaults": {
+      "missing_review_status": {
+        "when_ai_generated_true": "pending",
+        "otherwise": "not-required"
+      },
+      "missing_ai_generated": "omit"
+    },
+    "status": {
+      "ai-draft": {
+        "per_type": {
+          "system": "active",
+          "inbox": "inbox",
+          "source": "distilled",
+          "concept": "seed",
+          "question": "open",
+          "model": "seed",
+          "claim": "seed",
+          "note": "seed",
+          "moc": "active",
+          "project": "active",
+          "area": "active",
+          "output": "draft",
+          "daily": "active",
+          "review": "active"
+        },
+        "set": {
+          "review_status": "pending",
+          "ai_generated": true
+        },
+        "unknown_type": "report-and-leave-unchanged"
+      },
+      "seed": {
+        "per_type": {
+          "source": "distilled",
+          "output": "draft"
+        },
+        "other_types": "preserve-if-valid-otherwise-report"
+      },
+      "active": {
+        "per_type": {
+          "output": "draft"
+        },
+        "other_types": "preserve-if-valid-otherwise-report"
+      }
+    },
+    "source_type_aliases": {
+      "x_note_tweet": "social-post"
+    },
+    "rules": [
+      "Apply only explicit mappings.",
+      "Preserve a status that is already valid for its note type.",
+      "Never infer an unknown note type, source type, or provenance.",
+      "Report unresolved values without modifying them."
+    ]
+  }
+}

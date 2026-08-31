@@ -36,10 +36,15 @@ ObsiChan/
     update.ps1
     update.sh
     skills/
-      g-ark-vault-steward/
+      g-ark/
         SKILL.md
-      g-ark-source-distiller/
-        SKILL.md
+        agents/
+        references/
+        scripts/
+        tests/
+    gark/
+      config.toml
+      GARK_SCHEMA.json
   docs/
     spec/
       development_spec.md
@@ -60,7 +65,8 @@ ObsiChan/
 | `setup/install.sh` | macOS/Linux Bash 安装脚本 |
 | `setup/update.ps1` | Windows PowerShell 更新脚本 |
 | `setup/update.sh` | macOS/Linux Bash 更新脚本 |
-| `setup/skills/*/SKILL.md` | 可单独更新的 vault-level Codex skills |
+| `setup/skills/g-ark/` | 统一的 vault-level Codex skill 完整分发包 |
+| `setup/gark/` | 不含机器绝对路径的默认配置和机器可读 schema |
 
 ### 3.3 `docs/spec/`
 
@@ -90,14 +96,15 @@ setup/install.sh
 - 写入相同语义的 Obsidian 配置。
 - 写入相同语义的系统文件。
 - 下载同版本 Claudian。
-- 下载同一仓库分支下的 skills。
+- 下载同一仓库分支下的完整 `$g-ark` skill、默认配置和 schema。
 - 尝试配置 Claudian 的 Codex provider。
 
 更新脚本必须遵守更严格的非破坏性原则：
 
-- 默认只更新 `.codex/skills`。
+- 默认只更新 `.gark/skill`，并保持 `.codex/skills/g-ark` 发现入口有效。
 - 默认只补建缺失目录，例如 `20_Sources/Collections`。
-- 默认不覆盖 `00_System`、用户笔记、MOC、项目和输出。
+- 默认不覆盖已有 `.gark/config.toml`、`GARK_SCHEMA.json`、用户笔记、MOC、项目和输出。
+- 旧 skill 移出 `.codex/skills` 后保存在 `.gark/legacy-skills`，不直接删除。
 - 只有显式传入 `-UpdateClaudian` 或 `UPDATE_CLAUDIAN=1` 时，才更新 Claudian 插件文件。
 
 ### 4.2 参数规范
@@ -188,7 +195,7 @@ https://raw.githubusercontent.com/Geniusay/ObsiChan/<branch>/setup/...
 仓库内：
 
 ```text
-setup/skills/<skill-name>/SKILL.md
+setup/skills/g-ark/
 ```
 
 ### 5.1.1 Skills 更新机制
@@ -200,26 +207,27 @@ setup/update.ps1
 setup/update.sh
 ```
 
-更新脚本从 GitHub raw 下载仓库内的 `setup/skills/*/SKILL.md` 到目标 vault 的 `.codex/skills`。
+更新脚本从 GitHub raw 下载 `setup/skills/g-ark/` 的版本化文件到 `<vault>/.gark/skill`，并维护 `<vault>/.codex/skills/g-ark` 链接。配置文件只在缺失时从 `setup/gark/config.toml` 创建。
 
 开发者更新 skill 后，必须确认：
 
 - 安装脚本仍能下载新 skill。
 - 更新脚本能覆盖旧 skill。
-- README 和 `setup_tutorial.md` 中的 skill 名称仍正确。
+- README 和 `setup_tutorial.md` 中的唯一 skill 名称仍为 `$g-ark`。
+- 安装或更新不会回显、上传或覆盖已有配置。
 
 安装后的 vault 内：
 
 ```text
-<vault>/.codex/skills/<skill-name>/SKILL.md
+<vault>/.gark/skill/SKILL.md
+<vault>/.codex/skills/g-ark -> ../../.gark/skill
 ```
 
-### 5.2 当前内置 skills
+### 5.2 当前内置 skill
 
 | Skill | 职责 |
 | --- | --- |
-| `g-ark-vault-steward` | 维护、整理、复盘、扩展 vault |
-| `g-ark-source-distiller` | 将外部资料提炼为来源笔记、概念笔记和 MOC 更新 |
+| `g-ark` | 统一负责检索、引用、归档、提炼、会话沉淀、关联、审阅和审计 |
 
 ### 5.3 Skill Frontmatter 规范
 
@@ -251,7 +259,8 @@ description: 清晰描述触发场景和能力边界
 Skill 不应包含：
 
 - 私有 API key。
-- 用户个人路径。
+- 用户个人路径、用户名或配置内容。
+- 私有运行日志和检索索引。
 - 一次性对话历史。
 - 与 ObsiChan 无关的全局偏好。
 
@@ -355,14 +364,13 @@ _templates/
 git status --short
 ```
 
-检查脚本和文档是否包含错误路径：
+检查脚本和文档是否意外包含机器绝对路径或用户目录：
 
 ```bash
-grep -R "D:\\\\Code\\\\WorkSpace" .
-grep -R "C:\\\\Users\\\\WIN11" .
+rg -n '[A-Za-z]:\\\\|/Users/[^/]+|/home/[^/]+' .
 ```
 
-这些路径只能出现在示例或 Windows 说明中，不能出现在 macOS/Linux 执行逻辑中。
+命令示例应使用 `$HOME`、`$VAULT` 或 `<vault>`，不得写入开发者真实路径、用户名、配置内容或运行数据。
 
 ### 8.2 Skill 可见性验收
 
@@ -378,11 +386,10 @@ Windows PowerShell：
 codex debug prompt-input "测试 ObsiChan skills" | Select-String "g-ark"
 ```
 
-必须能看到：
+必须只看到：
 
 ```text
-g-ark-vault-steward
-g-ark-source-distiller
+g-ark
 ```
 
 ### 8.3 Obsidian 验收
@@ -392,7 +399,7 @@ g-ark-source-distiller
 - vault 文件树存在标准目录。
 - Claudian 插件可启用。
 - Claudian 使用 Codex provider。
-- Codex Skills 页面能看到两个 `$g-ark-*` skill。
+- Codex Skills 页面只看到 `$g-ark`。
 - 新建聊天不出现 Claude Code native binary 报错。
 
 ## 9. 发布规范
@@ -421,7 +428,8 @@ fix(claudian): avoid stale Claude provider state
 
 更新 skills 时，必须同步检查：
 
-- `setup/skills/*/SKILL.md`
+- `setup/skills/g-ark/`
+- `setup/gark/`
 - `setup_tutorial.md`
 - `docs/spec/development_spec.md`
 
@@ -437,8 +445,10 @@ setup/install.ps1
 setup/install.sh
 setup/update.ps1
 setup/update.sh
-setup/skills/g-ark-vault-steward/SKILL.md
-setup/skills/g-ark-source-distiller/SKILL.md
+setup/skills/g-ark/SKILL.md
+setup/skills/g-ark/references/
+setup/gark/config.toml
+setup/gark/GARK_SCHEMA.json
 ```
 
 维护顺序：

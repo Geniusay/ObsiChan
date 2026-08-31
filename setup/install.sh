@@ -6,6 +6,7 @@ BRANCH="${BRANCH:-main}"
 REPO_RAW_BASE="${REPO_RAW_BASE:-https://raw.githubusercontent.com/Geniusay/ObsiChan}"
 CLAUDIAN_VERSION="${CLAUDIAN_VERSION:-2.0.11}"
 CODEX_PATH="${CODEX_PATH:-}"
+INSTALL_DATE="$(date +%F)"
 
 RAW_BASE="$REPO_RAW_BASE/$BRANCH"
 
@@ -18,7 +19,7 @@ write_file() {
   local dir
   dir="$(dirname "$path")"
   mkdir -p "$dir"
-  cat > "$path"
+  sed "s/__OBSI_INSTALL_DATE__/$INSTALL_DATE/g" > "$path"
 }
 
 download_file() {
@@ -66,7 +67,8 @@ mkdir -p \
   "$VAULT_PATH/80_Assets/Images" "$VAULT_PATH/80_Assets/PDFs" "$VAULT_PATH/80_Assets/Audio" "$VAULT_PATH/80_Assets/Exports" \
   "$VAULT_PATH/_templates" \
   "$VAULT_PATH/.obsidian/plugins/claudian" \
-  "$VAULT_PATH/.codex/skills"
+  "$VAULT_PATH/.codex/skills" \
+  "$VAULT_PATH/.gark/skill"
 
 info "Writing Obsidian config"
 write_file "$VAULT_PATH/.obsidian/app.json" <<'EOF'
@@ -115,6 +117,15 @@ EOF
 
 info "Writing system notes"
 write_file "$VAULT_PATH/00_System/Index.md" <<'EOF'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "G-Ark 知识库系统入口"
+---
+
 # G-Ark Knowledge Base
 
 ## 快速入口
@@ -127,10 +138,9 @@ write_file "$VAULT_PATH/00_System/Index.md" <<'EOF'
 - [[MOC - 个人知识库]]
 - [[MOC - AI]]
 
-## Vault-Level Codex Skills
+## Codex Skill
 
-- `g-ark-vault-steward`：整理、维护、复盘和扩展这个 Obsidian vault。
-- `g-ark-source-distiller`：把文章、PDF、网页、摘录、会议记录等外部资料整理进知识库。
+- `g-ark`：统一负责检索、引用、归档、提炼、会话沉淀、关联、审阅和维护。
 
 ## 知识生命周期
 
@@ -138,6 +148,15 @@ write_file "$VAULT_PATH/00_System/Index.md" <<'EOF'
 EOF
 
 write_file "$VAULT_PATH/00_System/AI_CONTEXT.md" <<'EOF'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "AI 访问和维护知识库时的协作边界"
+---
+
 # AI Context
 
 ## 知识库目标
@@ -147,13 +166,22 @@ write_file "$VAULT_PATH/00_System/AI_CONTEXT.md" <<'EOF'
 ## AI 协作原则
 
 - 优先读取 `00_System/Index.md`、`00_System/SCHEMA.md`、`00_System/WORKFLOW.md`。
-- 如果任务涉及整理、维护、复盘或扩展本 vault，优先使用 `g-ark-vault-steward`。
-- 如果任务涉及把外部资料整理进本 vault，优先使用 `g-ark-source-distiller`。
-- AI 生成内容必须标记 `status: ai-draft`。
+- 涉及本 vault 的检索、归档、提炼、会话沉淀、维护或审阅时，统一使用 `g-ark`。
+- AI 生成内容必须按 `GARK_SCHEMA.json` 标记来源和审核状态。
 - 不要删除用户已有笔记，除非用户明确要求。
+- 不在笔记或反馈中暴露配置内容、凭据、用户名、机器绝对路径或运行数据。
 EOF
 
 write_file "$VAULT_PATH/00_System/SCHEMA.md" <<'EOF'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "GARK_SCHEMA.json 的人类可读说明"
+---
+
 # Schema
 
 ## 目录职责
@@ -189,22 +217,49 @@ write_file "$VAULT_PATH/00_System/SCHEMA.md" <<'EOF'
 EOF
 
 write_file "$VAULT_PATH/00_System/WORKFLOW.md" <<'EOF'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "知识捕获、提炼、连接和审核流程"
+---
+
 # Workflow
 
 10_Inbox -> 20_Sources -> 30_Notes -> 40_Maps -> 50_Projects / 70_Outputs
 
-AI 生成内容必须标记 `status: ai-draft` 并进入审核流程。
+AI 生成内容必须按 `GARK_SCHEMA.json` 标记 `ai_generated` 与 `review_status` 并进入审核流程。
 EOF
 
 write_file "$VAULT_PATH/00_System/REVIEW.md" <<'EOF'
+---
+type: review
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "需要人工判断的知识库审核入口"
+---
+
 # Review
 
 - [ ] 清理 `10_Inbox`
-- [ ] 检查 `status: ai-draft` 的笔记
+- [ ] 检查 `review_status: pending` 的 AI 生成笔记
 - [ ] 更新相关 MOC
 EOF
 
 write_file "$VAULT_PATH/00_System/TAXONOMY.md" <<'EOF'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "知识库稳定主题及别名说明"
+---
+
 # Taxonomy
 
 - AI
@@ -217,27 +272,35 @@ write_file "$VAULT_PATH/00_System/TAXONOMY.md" <<'EOF'
 EOF
 
 write_file "$VAULT_PATH/00_System/PROMPTS.md" <<'EOF'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "调用统一 G-Ark skill 的常用请求"
+---
+
 # Prompts
 
 请读取 `00_System/AI_CONTEXT.md` 和 `00_System/SCHEMA.md`，把我提供的资料整理进这个 Obsidian vault。
 EOF
 
 info "Writing starter notes"
-printf '# Quick Capture\n\n## 临时想法\n\n- \n' > "$VAULT_PATH/10_Inbox/Quick Capture.md"
-printf '# MOC - 个人知识库\n\n## 核心问题\n\n- 如何把资料转化为可复用的思想？\n' > "$VAULT_PATH/40_Maps/MOC - 个人知识库.md"
-printf '# MOC - AI\n\n## 核心问题\n\n- AI 如何改变个人知识管理？\n' > "$VAULT_PATH/40_Maps/MOC - AI.md"
-printf '# MOC - 学习\n\n## 核心问题\n\n- 什么样的学习会长期复利？\n' > "$VAULT_PATH/40_Maps/MOC - 学习.md"
-printf '# MOC - 写作\n\n## 核心问题\n\n- 如何把笔记转化为文章？\n' > "$VAULT_PATH/40_Maps/MOC - 写作.md"
-printf '# MOC - 项目\n\n## Active\n\n- \n' > "$VAULT_PATH/40_Maps/MOC - 项目.md"
+printf '%s\n' '---' 'type: inbox' 'status: inbox' 'review_status: not-required' "created: $INSTALL_DATE" 'topics: []' 'summary: "临时捕获入口"' '---' '' '# Quick Capture' '' '## 临时想法' '' '- ' > "$VAULT_PATH/10_Inbox/Quick Capture.md"
+for moc in 个人知识库 AI 学习 写作 项目; do
+  printf '%s\n' '---' 'type: moc' 'status: active' 'review_status: not-required' "created: $INSTALL_DATE" 'topics: []' "summary: \"$moc 主题导航\"" '---' '' "# MOC - $moc" '' '## 核心问题' '' '- ' > "$VAULT_PATH/40_Maps/MOC - $moc.md"
+done
 
 for area in 学习 职业 健康 财务 创作; do
-  printf '# %s\n\n## 维护标准\n\n- \n' "$area" > "$VAULT_PATH/60_Areas/$area.md"
+  printf '%s\n' '---' 'type: area' 'status: active' 'review_status: not-required' "created: $INSTALL_DATE" 'topics: []' "summary: \"$area 长期责任区\"" 'standard: ""' 'review_cycle: monthly' '---' '' "# $area" '' '## 维护标准' '' '- ' > "$VAULT_PATH/60_Areas/$area.md"
 done
 
 write_file "$VAULT_PATH/_templates/source-template.md" <<'EOF'
 ---
 type: source
 status: raw
+review_status: not-required
 created: {{date}}
 updated:
 author:
@@ -267,6 +330,7 @@ write_file "$VAULT_PATH/_templates/concept-template.md" <<'EOF'
 ---
 type: concept
 status: seed
+review_status: not-required
 created: {{date}}
 updated:
 topics: []
@@ -291,10 +355,56 @@ download_file "$CLAUDIAN_BASE/main.js" "$VAULT_PATH/.obsidian/plugins/claudian/m
 download_file "$CLAUDIAN_BASE/manifest.json" "$VAULT_PATH/.obsidian/plugins/claudian/manifest.json"
 download_file "$CLAUDIAN_BASE/styles.css" "$VAULT_PATH/.obsidian/plugins/claudian/styles.css"
 
-info "Downloading vault-level Codex skills"
-for skill in g-ark-vault-steward g-ark-source-distiller; do
-  mkdir -p "$VAULT_PATH/.codex/skills/$skill"
-  download_file "$RAW_BASE/setup/skills/$skill/SKILL.md" "$VAULT_PATH/.codex/skills/$skill/SKILL.md"
+info "Downloading the unified G-Ark Codex skill"
+GARK_ROOT="$VAULT_PATH/.gark"
+SKILL_ROOT="$GARK_ROOT/skill"
+SKILL_FILES=(
+  "SKILL.md"
+  "agents/openai.yaml"
+  "references/archive.md"
+  "references/audit.md"
+  "references/capture.md"
+  "references/connect.md"
+  "references/distill.md"
+  "references/retrieve.md"
+  "references/review.md"
+  "references/session.md"
+  "references/write-safety.md"
+  "scripts/gark.py"
+  "scripts/install-global.ps1"
+)
+for relative_path in "${SKILL_FILES[@]}"; do
+  download_file "$RAW_BASE/setup/skills/g-ark/$relative_path" "$SKILL_ROOT/$relative_path"
+done
+
+if [ ! -f "$GARK_ROOT/config.toml" ]; then
+  download_file "$RAW_BASE/setup/gark/config.toml" "$GARK_ROOT/config.toml"
+fi
+download_file "$RAW_BASE/setup/gark/GARK_SCHEMA.json" "$VAULT_PATH/00_System/GARK_SCHEMA.json"
+
+SKILL_LINK="$VAULT_PATH/.codex/skills/g-ark"
+if [ ! -e "$SKILL_LINK" ] && [ ! -L "$SKILL_LINK" ]; then
+  ln -s ../../.gark/skill "$SKILL_LINK"
+elif [ ! -L "$SKILL_LINK" ]; then
+  printf 'Cannot enable g-ark because a non-link path already exists: %s\n' "$SKILL_LINK" >&2
+  exit 1
+else
+  ln -sfn ../../.gark/skill "$SKILL_LINK"
+fi
+
+LEGACY_ROOT="$GARK_ROOT/legacy-skills"
+for legacy_name in g-ark-vault-steward g-ark-source-distiller g-ark-session-distiller; do
+  legacy_path="$VAULT_PATH/.codex/skills/$legacy_name"
+  if [ -e "$legacy_path" ] || [ -L "$legacy_path" ]; then
+    mkdir -p "$LEGACY_ROOT"
+    backup_path="$LEGACY_ROOT/$legacy_name"
+    if [ -e "$backup_path" ] || [ -L "$backup_path" ]; then
+      printf 'Legacy backup already exists; leaving %s unchanged.\n' "$legacy_name" >&2
+    else
+      mv "$legacy_path" "$backup_path"
+      info "Disabled legacy skill $legacy_name and preserved it under .gark/legacy-skills"
+    fi
+  fi
 done
 
 if CODEX_RESOLVED="$(resolve_codex_path)"; then

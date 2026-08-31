@@ -28,8 +28,8 @@
 - 帮你搭好 Obsidian 第二大脑的目录骨架。
 - 给 AI Agent 一份可执行的 vault 规则。
 - 用 Claudian 把 Codex 接进 Obsidian。
-- 用 vault-level Codex skills 固化整理、提炼、复盘的方法。
-- 让已经安装的用户可以持续更新 skills，而不是重装整个知识库。
+- 用统一的 `$g-ark` Codex skill 固化检索、沉淀、整理和复盘的方法。
+- 让已经安装的用户可以持续更新 skill，而不是重装整个知识库。
 
 一句话：**ObsiChan 负责把知识库从“文件夹”变成“可被人和 AI 一起维护的认知系统”。**
 
@@ -104,26 +104,24 @@ Agent 进入 vault 前会先读：
 - 主题导航用 MOC，不要随意新建主题文件夹。
 - 不删除用户已有笔记，除非用户明确要求。
 
-### 5. Skills 可更新：把方法论变成可维护能力
+### 5. 一个统一 Skill：把方法论变成可维护能力
 
-ObsiChan 把两个核心能力做成 vault-level Codex skills：
+ObsiChan 只提供 `$g-ark` 一个入口。它统一负责知识检索与引用、资料归档与提炼、会话结论沉淀、链接与 MOC、AI 草稿审阅以及知识库审计。
 
-- `$g-ark-vault-steward`：维护、整理、复盘和扩展 vault。
-- `$g-ark-source-distiller`：把外部资料提炼成来源笔记、概念笔记和 MOC 更新。
-
-它们放在：
+分发源码放在：
 
 ```text
-setup/skills/
+setup/skills/g-ark/
 ```
 
-安装后进入：
+安装后，Skill 真源和发现入口分别是：
 
 ```text
-<vault>/.codex/skills/
+<vault>/.gark/skill/
+<vault>/.codex/skills/g-ark -> ../../.gark/skill
 ```
 
-这样 skills 可以从 GitHub 单独更新，不需要重装用户的知识库。
+`.gark/config.toml` 使用相对路径定位 vault。安装和更新过程不会把本机绝对路径、用户名或配置内容提交到仓库，也不会覆盖已有配置。旧的 `$g-ark-vault-steward`、`$g-ark-source-distiller` 和 `$g-ark-session-distiller` 会在升级时移出发现目录并保留为本地备份。
 
 ## 快速开始
 
@@ -146,7 +144,7 @@ curl -fsSL https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/instal
 VAULT_PATH="$HOME/Documents/G-Ark" bash /tmp/obsichan-install.sh
 ```
 
-已安装用户更新 skills：
+已安装用户更新统一 skill：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/update.sh -o /tmp/obsichan-update.sh
@@ -172,7 +170,7 @@ powershell -ExecutionPolicy Bypass -File $script -VaultPath "$HOME\Documents\G-A
 基本原则：
 
 - 改安装脚本时，同步检查 `setup_tutorial.md`。
-- 改 skills 时，同步检查 `setup/skills`、安装教程和开发规范。
+- 改 `$g-ark` 时，同步检查 `setup/skills/g-ark`、安装教程和开发规范。
 - 改默认 vault 结构时，同步检查 README、安装脚本、教程和规范。
 - 不要提交用户个人笔记、Claudian 会话、Obsidian workspace 状态。
 

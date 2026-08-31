@@ -1,0 +1,27 @@
+version = 1
+vault_root = ".."
+runtime_dir = "runtime"
+schema_path = "00_System/GARK_SCHEMA.json"
+
+[index]
+database = "gark-index.sqlite3"
+include_dirs = [
+  "00_System",
+  "10_Inbox",
+  "20_Sources",
+  "30_Notes",
+  "40_Maps",
+  "50_Projects",
+  "60_Areas",
+  "70_Outputs",
+]
+
+[search]
+default_limit = 5
+max_limit = 20
+
+[observe]
+log = "observations.jsonl"
+
+[capture]
+inbox_dir = "10_Inbox"

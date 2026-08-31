@@ -32,12 +32,64 @@ fi
 
 VAULT_PATH="$(cd "$VAULT_PATH" && pwd -P)"
 
-info "Updating vault-level Codex skills in $VAULT_PATH"
+info "Updating the unified G-Ark Codex skill in $VAULT_PATH"
 
-for skill in g-ark-vault-steward g-ark-source-distiller; do
-  mkdir -p "$VAULT_PATH/.codex/skills/$skill"
-  download_file "$RAW_BASE/setup/skills/$skill/SKILL.md" "$VAULT_PATH/.codex/skills/$skill/SKILL.md"
-  info "Updated $skill"
+GARK_ROOT="$VAULT_PATH/.gark"
+SKILL_ROOT="$GARK_ROOT/skill"
+SKILL_FILES=(
+  "SKILL.md"
+  "agents/openai.yaml"
+  "references/archive.md"
+  "references/audit.md"
+  "references/capture.md"
+  "references/connect.md"
+  "references/distill.md"
+  "references/retrieve.md"
+  "references/review.md"
+  "references/session.md"
+  "references/write-safety.md"
+  "scripts/gark.py"
+  "scripts/install-global.ps1"
+)
+for relative_path in "${SKILL_FILES[@]}"; do
+  download_file "$RAW_BASE/setup/skills/g-ark/$relative_path" "$SKILL_ROOT/$relative_path"
+done
+info "Updated g-ark"
+
+if [ ! -f "$GARK_ROOT/config.toml" ]; then
+  download_file "$RAW_BASE/setup/gark/config.toml" "$GARK_ROOT/config.toml"
+  info "Created the default relative .gark/config.toml"
+fi
+
+if [ ! -f "$VAULT_PATH/00_System/GARK_SCHEMA.json" ]; then
+  download_file "$RAW_BASE/setup/gark/GARK_SCHEMA.json" "$VAULT_PATH/00_System/GARK_SCHEMA.json"
+  info "Installed the canonical GARK_SCHEMA.json"
+fi
+
+mkdir -p "$VAULT_PATH/.codex/skills"
+SKILL_LINK="$VAULT_PATH/.codex/skills/g-ark"
+if [ ! -e "$SKILL_LINK" ] && [ ! -L "$SKILL_LINK" ]; then
+  ln -s ../../.gark/skill "$SKILL_LINK"
+elif [ ! -L "$SKILL_LINK" ]; then
+  printf 'Cannot enable g-ark because a non-link path already exists: %s\n' "$SKILL_LINK" >&2
+  exit 1
+else
+  ln -sfn ../../.gark/skill "$SKILL_LINK"
+fi
+
+LEGACY_ROOT="$GARK_ROOT/legacy-skills"
+for legacy_name in g-ark-vault-steward g-ark-source-distiller g-ark-session-distiller; do
+  legacy_path="$VAULT_PATH/.codex/skills/$legacy_name"
+  if [ -e "$legacy_path" ] || [ -L "$legacy_path" ]; then
+    mkdir -p "$LEGACY_ROOT"
+    backup_path="$LEGACY_ROOT/$legacy_name"
+    if [ -e "$backup_path" ] || [ -L "$backup_path" ]; then
+      printf 'Legacy backup already exists; leaving %s unchanged.\n' "$legacy_name" >&2
+    else
+      mv "$legacy_path" "$backup_path"
+      info "Disabled legacy skill $legacy_name and preserved it under .gark/legacy-skills"
+    fi
+  fi
 done
 
 if [ ! -d "$VAULT_PATH/20_Sources/Collections" ]; then
@@ -53,4 +105,4 @@ if [ "$UPDATE_CLAUDIAN" = "1" ]; then
   download_file "$CLAUDIAN_BASE/styles.css" "$VAULT_PATH/.obsidian/plugins/claudian/styles.css"
 fi
 
-info "Done. Restart Obsidian or refresh Claudian Codex Skills."
+info "Done. Existing configuration was preserved. Restart Obsidian or refresh Claudian Codex Skills."

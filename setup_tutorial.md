@@ -11,9 +11,7 @@ ObsiChan 是一套面向 Obsidian + Codex Agent 的外置大脑初始化方案�
 - 一套 Inbox、Sources、Notes、Maps、Projects、Areas、Outputs、Assets 目录。
 - Claudian Obsidian 插件。
 - Codex provider 配置。
-- 两个 vault-level Codex skills：
-  - `$g-ark-vault-steward`
-  - `$g-ark-source-distiller`
+- 一个统一的 vault-level Codex skill：`$g-ark`。
 
 整体工作流：
 
@@ -69,15 +67,15 @@ powershell -ExecutionPolicy Bypass -File $script -VaultPath "$HOME\Documents\G-A
 ```powershell
 $script = "$env:TEMP\obsichan-install.ps1"
 Invoke-WebRequest "https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/install.ps1" -OutFile $script
-powershell -ExecutionPolicy Bypass -File $script -VaultPath "D:\Code\WorkSpace\G-Ark"
+powershell -ExecutionPolicy Bypass -File $script -VaultPath "$HOME\Documents\G-Ark"
 ```
 
 如果 Claudian 没能自动识别 Codex，可以显式传入路径：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File $script `
-  -VaultPath "D:\Code\WorkSpace\G-Ark" `
-  -CodexPath "C:\Users\<用户名>\AppData\Local\OpenAI\Codex\bin\codex.exe"
+  -VaultPath "$HOME\Documents\G-Ark" `
+  -CodexPath "$HOME\AppData\Local\OpenAI\Codex\bin\codex.exe"
 ```
 
 ### 3.2 macOS / Linux
@@ -133,12 +131,12 @@ setup/update.sh
 - 写入 `00_System` 系统文件。
 - 写入初始 MOC、Areas、Templates。
 - 下载并安装 Claudian。
-- 从 GitHub 下载 vault-level Codex skills。
+- 从 GitHub 下载完整的 `$g-ark` skill、默认相对配置和机器可读 schema。
 - 尝试写入 Claudian Codex provider 配置。
 
 ### 4.1 已安装用户如何更新
 
-ObsiChan 的 skills 会持续更新。已安装用户不需要重装整个 vault，可以只运行更新脚本。
+ObsiChan 的 `$g-ark` skill 会持续更新。已安装用户不需要重装整个 vault，可以只运行更新脚本。
 
 Windows PowerShell：
 
@@ -155,13 +153,9 @@ curl -fsSL https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/update
 VAULT_PATH="$HOME/Documents/G-Ark" bash /tmp/obsichan-update.sh
 ```
 
-默认更新内容：
+默认更新 `.gark/skill/` 下的统一 skill，并补建缺失的 `.gark/config.toml`、`00_System/GARK_SCHEMA.json` 和 `20_Sources/Collections`。已有配置和 schema 不会被覆盖。
 
-- `.codex/skills/g-ark-vault-steward/SKILL.md`
-- `.codex/skills/g-ark-source-distiller/SKILL.md`
-- 补建 `20_Sources/Collections`
-
-默认不会覆盖你的笔记、MOC、项目、输出文件，也不会重写 `00_System`。
+升级脚本会把旧的 `g-ark-vault-steward`、`g-ark-source-distiller`、`g-ark-session-distiller` 移到 `.gark/legacy-skills/`。这些备份不会再被 Codex 发现，但仍可手动恢复。脚本不会覆盖你的笔记、MOC、项目或输出文件。
 
 如果你也想更新 Claudian 插件：
 
@@ -177,47 +171,40 @@ macOS / Linux：
 UPDATE_CLAUDIAN=1 VAULT_PATH="$HOME/Documents/G-Ark" bash /tmp/obsichan-update.sh
 ```
 
-## 5. Skills 在哪里？
+## 5. Skill 在哪里？
 
-两个 skill 已从教程和本地 vault 中提取出来，统一放在：
-
-```text
-setup/skills/g-ark-vault-steward/SKILL.md
-setup/skills/g-ark-source-distiller/SKILL.md
-```
-
-安装脚本会从 GitHub raw 地址下载它们，并安装到目标 vault：
+统一 skill 的版本化源码放在：
 
 ```text
-<vault>/.codex/skills/g-ark-vault-steward/SKILL.md
-<vault>/.codex/skills/g-ark-source-distiller/SKILL.md
+setup/skills/g-ark/
 ```
 
-如果你只想更新 skills，不想重装 vault，可以手动下载：
+安装脚本会下载完整目录、默认配置和 schema，并建立唯一发现入口：
 
-```bash
-mkdir -p "$VAULT/.codex/skills/g-ark-vault-steward"
-mkdir -p "$VAULT/.codex/skills/g-ark-source-distiller"
-curl -fsSL https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/skills/g-ark-vault-steward/SKILL.md -o "$VAULT/.codex/skills/g-ark-vault-steward/SKILL.md"
-curl -fsSL https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/skills/g-ark-source-distiller/SKILL.md -o "$VAULT/.codex/skills/g-ark-source-distiller/SKILL.md"
+```text
+<vault>/.gark/config.toml
+<vault>/.gark/skill/
+<vault>/00_System/GARK_SCHEMA.json
+<vault>/.codex/skills/g-ark -> ../../.gark/skill
 ```
 
-Windows PowerShell：
+只更新 skill 时，推荐运行上一节的更新脚本。不要只下载 `SKILL.md`，因为统一版还依赖 `references/` 和 `scripts/gark.py`。
 
-```powershell
-$VAULT = "$HOME\Documents\G-Ark"
-New-Item -ItemType Directory -Path "$VAULT\.codex\skills\g-ark-vault-steward" -Force | Out-Null
-New-Item -ItemType Directory -Path "$VAULT\.codex\skills\g-ark-source-distiller" -Force | Out-Null
-Invoke-WebRequest "https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/skills/g-ark-vault-steward/SKILL.md" -OutFile "$VAULT\.codex\skills\g-ark-vault-steward\SKILL.md"
-Invoke-WebRequest "https://raw.githubusercontent.com/Geniusay/ObsiChan/main/setup/skills/g-ark-source-distiller/SKILL.md" -OutFile "$VAULT\.codex\skills\g-ark-source-distiller\SKILL.md"
+默认配置只使用相对路径：
+
+```toml
+vault_root = ".."
+schema_path = "00_System/GARK_SCHEMA.json"
 ```
+
+更新器不会读取、打印、上传或覆盖现有 `config.toml`。Skill 的笔记和操作报告也应只使用 vault 相对路径，不包含凭据、用户名或机器绝对路径。
 
 ## 6. 用 Obsidian 打开 vault
 
 1. 打开 Obsidian。
 2. 选择 `Open folder as vault`。
 3. 打开你的 vault 路径：
-   - Windows: `D:\Code\WorkSpace\G-Ark` 或 `$HOME\Documents\G-Ark`
+   - Windows: `$HOME\Documents\G-Ark`
    - macOS: `~/Documents/G-Ark`
    - Linux: `~/Documents/G-Ark`
 4. 进入 `Settings -> Community plugins`。
@@ -267,18 +254,16 @@ Windows PowerShell：
 codex debug prompt-input "测试 ObsiChan skills" | Select-String "g-ark"
 ```
 
-预期能看到：
+预期只看到：
 
 ```text
-g-ark-vault-steward
-g-ark-source-distiller
+g-ark
 ```
 
 在 Obsidian 的 Claudian 设置页中，进入 `Codex Skills`，点击刷新，应该能看到：
 
 ```text
-$g-ark-vault-steward
-$g-ark-source-distiller
+$g-ark
 ```
 
 ## 9. 常见问题
@@ -376,6 +361,6 @@ ls -la
 4. 用 Obsidian 的 Open folder as vault 打开 `~/Documents/G-Ark`。
 5. 启用 Claudian 社区插件。
 6. 确认 Claudian 使用 Codex provider。
-7. 验收 `.codex/skills` 中存在两个 SKILL.md，并且 Claudian 的 Codex Skills 页面能看到 `$g-ark-vault-steward` 和 `$g-ark-source-distiller`。
+7. 验收 `.codex/skills/g-ark` 指向 `.gark/skill`，并且 Claudian 的 Codex Skills 页面只显示 `$g-ark`。
 8. 如果出现 Claude Code native binary 报错，按本文档 9.1 清理旧 Claude 状态。
 ```

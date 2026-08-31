@@ -22,7 +22,8 @@ function Write-TextFile {
   if ($dir) {
     New-Item -ItemType Directory -Path $dir -Force | Out-Null
   }
-  Set-Content -LiteralPath $Path -Value $Content -Encoding UTF8
+  $resolvedContent = $Content.Replace("__OBSI_INSTALL_DATE__", (Get-Date -Format "yyyy-MM-dd"))
+  Set-Content -LiteralPath $Path -Value $resolvedContent -Encoding UTF8
 }
 
 function Download-File {
@@ -77,7 +78,8 @@ $dirs = @(
   "_templates",
   ".obsidian",
   ".obsidian\plugins\claudian",
-  ".codex\skills"
+  ".codex\skills",
+  ".gark\skill"
 )
 
 foreach ($dir in $dirs) {
@@ -131,6 +133,15 @@ Write-TextFile -Path (Join-Path $VaultPath ".obsidian\community-plugins.json") -
 
 Write-Info "Writing system notes"
 Write-TextFile -Path (Join-Path $VaultPath "00_System\Index.md") -Content @'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "G-Ark 知识库系统入口"
+---
+
 # G-Ark Knowledge Base
 
 ## 快速入口
@@ -143,10 +154,9 @@ Write-TextFile -Path (Join-Path $VaultPath "00_System\Index.md") -Content @'
 - [[MOC - 个人知识库]]
 - [[MOC - AI]]
 
-## Vault-Level Codex Skills
+## Codex Skill
 
-- `g-ark-vault-steward`：整理、维护、复盘和扩展这个 Obsidian vault。
-- `g-ark-source-distiller`：把文章、PDF、网页、摘录、会议记录等外部资料整理进知识库。
+- `g-ark`：统一负责检索、引用、归档、提炼、会话沉淀、关联、审阅和维护。
 
 ## 知识生命周期
 
@@ -154,6 +164,15 @@ Write-TextFile -Path (Join-Path $VaultPath "00_System\Index.md") -Content @'
 '@
 
 Write-TextFile -Path (Join-Path $VaultPath "00_System\AI_CONTEXT.md") -Content @'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "AI 访问和维护知识库时的协作边界"
+---
+
 # AI Context
 
 ## 知识库目标
@@ -163,10 +182,10 @@ Write-TextFile -Path (Join-Path $VaultPath "00_System\AI_CONTEXT.md") -Content @
 ## AI 协作原则
 
 - 优先读取 `00_System/Index.md`、`00_System/SCHEMA.md`、`00_System/WORKFLOW.md`。
-- 如果任务涉及整理、维护、复盘或扩展本 vault，优先使用 `g-ark-vault-steward`。
-- 如果任务涉及把外部资料整理进本 vault，优先使用 `g-ark-source-distiller`。
-- AI 生成内容必须标记 `status: ai-draft`。
+- 涉及本 vault 的检索、归档、提炼、会话沉淀、维护或审阅时，统一使用 `g-ark`。
+- AI 生成内容必须按 `GARK_SCHEMA.json` 标记来源和审核状态。
 - 不要删除用户已有笔记，除非用户明确要求。
+- 不在笔记或反馈中暴露配置内容、凭据、用户名、机器绝对路径或运行数据。
 
 ## 用户偏好
 
@@ -176,6 +195,15 @@ Write-TextFile -Path (Join-Path $VaultPath "00_System\AI_CONTEXT.md") -Content @
 '@
 
 Write-TextFile -Path (Join-Path $VaultPath "00_System\SCHEMA.md") -Content @'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "GARK_SCHEMA.json 的人类可读说明"
+---
+
 # Schema
 
 ## 目录职责
@@ -211,17 +239,19 @@ Write-TextFile -Path (Join-Path $VaultPath "00_System\SCHEMA.md") -Content @'
 
 ## 状态约定
 
-- `inbox`：尚未整理
-- `raw`：来源内容尚未提炼
-- `ai-draft`：AI 生成或整理，等待用户确认
-- `seed`：初步形成
-- `evergreen`：已稳定
-- `active`：正在推进
-- `waiting`：等待外部条件
-- `completed`：已完成
+类型、生命周期状态、审核状态和目录路由以 `GARK_SCHEMA.json` 为机器可读真源。本文件只解释原则，不维护第二份枚举。
 '@
 
 Write-TextFile -Path (Join-Path $VaultPath "00_System\WORKFLOW.md") -Content @'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "知识捕获、提炼、连接和审核流程"
+---
+
 # Workflow
 
 ## 每日捕获
@@ -240,10 +270,19 @@ Write-TextFile -Path (Join-Path $VaultPath "00_System\WORKFLOW.md") -Content @'
 
 ## AI 协作流程
 
-AI 整理资料时，应创建来源笔记、提炼 1-5 篇长期笔记、标记 `status: ai-draft`，并更新相关 MOC。
+AI 整理资料时，应创建可追溯的来源笔记，只提炼有长期复用价值的内容，并按 `GARK_SCHEMA.json` 标记 `ai_generated` 与 `review_status`。只有强相关时才更新现有 MOC。
 '@
 
 Write-TextFile -Path (Join-Path $VaultPath "00_System\REVIEW.md") -Content @'
+---
+type: review
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "需要人工判断的知识库审核入口"
+---
+
 # Review
 
 ## Inbox 清理
@@ -254,12 +293,21 @@ Write-TextFile -Path (Join-Path $VaultPath "00_System\REVIEW.md") -Content @'
 
 ## AI 草稿审核
 
-- [ ] 检查 `status: ai-draft` 的笔记是否准确
+- [ ] 检查 `review_status: pending` 的 AI 生成笔记是否准确
 - [ ] 为 AI 生成笔记补充来源链接
-- [ ] 把确认后的笔记改为 `status: seed` 或 `status: evergreen`
+- [ ] 明确选择批准、修订、推迟或拒绝
 '@
 
 Write-TextFile -Path (Join-Path $VaultPath "00_System\TAXONOMY.md") -Content @'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "知识库稳定主题及别名说明"
+---
+
 # Taxonomy
 
 ## 初始主题
@@ -279,6 +327,15 @@ Write-TextFile -Path (Join-Path $VaultPath "00_System\TAXONOMY.md") -Content @'
 '@
 
 Write-TextFile -Path (Join-Path $VaultPath "00_System\PROMPTS.md") -Content @'
+---
+type: system
+status: active
+review_status: not-required
+created: __OBSI_INSTALL_DATE__
+topics: []
+summary: "调用统一 G-Ark skill 的常用请求"
+---
+
 # Prompts
 
 ## 整理一篇资料
@@ -287,21 +344,20 @@ Write-TextFile -Path (Join-Path $VaultPath "00_System\PROMPTS.md") -Content @'
 '@
 
 Write-Info "Writing starter MOCs, templates, and areas"
-Write-TextFile -Path (Join-Path $VaultPath "10_Inbox\Quick Capture.md") -Content "# Quick Capture`n`n## 临时想法`n`n- "
-Write-TextFile -Path (Join-Path $VaultPath "40_Maps\MOC - 个人知识库.md") -Content "# MOC - 个人知识库`n`n## 核心问题`n`n- 如何把资料转化为可复用的思想？`n- 如何让知识库同时适合人和 AI 使用？"
-Write-TextFile -Path (Join-Path $VaultPath "40_Maps\MOC - AI.md") -Content "# MOC - AI`n`n## 核心问题`n`n- AI 如何改变个人知识管理？"
-Write-TextFile -Path (Join-Path $VaultPath "40_Maps\MOC - 学习.md") -Content "# MOC - 学习`n`n## 核心问题`n`n- 什么样的学习会长期复利？"
-Write-TextFile -Path (Join-Path $VaultPath "40_Maps\MOC - 写作.md") -Content "# MOC - 写作`n`n## 核心问题`n`n- 如何把笔记转化为文章？"
-Write-TextFile -Path (Join-Path $VaultPath "40_Maps\MOC - 项目.md") -Content "# MOC - 项目`n`n## Active`n`n- "
+Write-TextFile -Path (Join-Path $VaultPath "10_Inbox\Quick Capture.md") -Content "---`ntype: inbox`nstatus: inbox`nreview_status: not-required`ncreated: __OBSI_INSTALL_DATE__`ntopics: []`nsummary: `"临时捕获入口`"`n---`n`n# Quick Capture`n`n## 临时想法`n`n- "
+foreach ($moc in @("个人知识库","AI","学习","写作","项目")) {
+  Write-TextFile -Path (Join-Path $VaultPath "40_Maps\MOC - $moc.md") -Content "---`ntype: moc`nstatus: active`nreview_status: not-required`ncreated: __OBSI_INSTALL_DATE__`ntopics: []`nsummary: `"$moc 主题导航`"`n---`n`n# MOC - $moc`n`n## 核心问题`n`n- "
+}
 
 foreach ($area in @("学习","职业","健康","财务","创作")) {
-  Write-TextFile -Path (Join-Path $VaultPath "60_Areas\$area.md") -Content "# $area`n`n## 维护标准`n`n- "
+  Write-TextFile -Path (Join-Path $VaultPath "60_Areas\$area.md") -Content "---`ntype: area`nstatus: active`nreview_status: not-required`ncreated: __OBSI_INSTALL_DATE__`ntopics: []`nsummary: `"$area 长期责任区`"`nstandard: `"`"`nreview_cycle: monthly`n---`n`n# $area`n`n## 维护标准`n`n- "
 }
 
 Write-TextFile -Path (Join-Path $VaultPath "_templates\source-template.md") -Content @'
 ---
 type: source
 status: raw
+review_status: not-required
 created: {{date}}
 updated:
 author:
@@ -331,6 +387,7 @@ Write-TextFile -Path (Join-Path $VaultPath "_templates\concept-template.md") -Co
 ---
 type: concept
 status: seed
+review_status: not-required
 created: {{date}}
 updated:
 topics: []
@@ -360,11 +417,60 @@ Download-File -Url "$claudianBase/main.js" -OutFile (Join-Path $pluginDir "main.
 Download-File -Url "$claudianBase/manifest.json" -OutFile (Join-Path $pluginDir "manifest.json")
 Download-File -Url "$claudianBase/styles.css" -OutFile (Join-Path $pluginDir "styles.css")
 
-Write-Info "Downloading vault-level Codex skills"
-foreach ($skill in @("g-ark-vault-steward", "g-ark-source-distiller")) {
-  $skillDir = Join-Path $VaultPath ".codex\skills\$skill"
-  New-Item -ItemType Directory -Path $skillDir -Force | Out-Null
-  Download-File -Url "$RawBase/setup/skills/$skill/SKILL.md" -OutFile (Join-Path $skillDir "SKILL.md")
+Write-Info "Downloading the unified G-Ark Codex skill"
+$garkRoot = Join-Path $VaultPath ".gark"
+$skillRoot = Join-Path $garkRoot "skill"
+$skillFiles = @(
+  "SKILL.md",
+  "agents/openai.yaml",
+  "references/archive.md",
+  "references/audit.md",
+  "references/capture.md",
+  "references/connect.md",
+  "references/distill.md",
+  "references/retrieve.md",
+  "references/review.md",
+  "references/session.md",
+  "references/write-safety.md",
+  "scripts/gark.py",
+  "scripts/install-global.ps1"
+)
+foreach ($relativePath in $skillFiles) {
+  $localPath = $relativePath.Replace("/", "\")
+  Download-File -Url "$RawBase/setup/skills/g-ark/$relativePath" -OutFile (Join-Path $skillRoot $localPath)
+}
+
+$configPath = Join-Path $garkRoot "config.toml"
+if (-not (Test-Path -LiteralPath $configPath)) {
+  Download-File -Url "$RawBase/setup/gark/config.toml" -OutFile $configPath
+}
+Download-File -Url "$RawBase/setup/gark/GARK_SCHEMA.json" -OutFile (Join-Path $VaultPath "00_System\GARK_SCHEMA.json")
+
+$skillLink = Join-Path $VaultPath ".codex\skills\g-ark"
+if (-not (Test-Path -LiteralPath $skillLink)) {
+  New-Item -ItemType Junction -Path $skillLink -Target $skillRoot | Out-Null
+} else {
+  $existingLink = Get-Item -Force -LiteralPath $skillLink
+  if (-not $existingLink.LinkType) {
+    throw "Cannot enable g-ark because a non-link path already exists: $skillLink"
+  }
+  Remove-Item -Force -LiteralPath $skillLink
+  New-Item -ItemType Junction -Path $skillLink -Target $skillRoot | Out-Null
+}
+
+$legacyRoot = Join-Path $garkRoot "legacy-skills"
+foreach ($legacyName in @("g-ark-vault-steward", "g-ark-source-distiller", "g-ark-session-distiller")) {
+  $legacyPath = Join-Path $VaultPath ".codex\skills\$legacyName"
+  if (Test-Path -LiteralPath $legacyPath) {
+    New-Item -ItemType Directory -Path $legacyRoot -Force | Out-Null
+    $backupPath = Join-Path $legacyRoot $legacyName
+    if (Test-Path -LiteralPath $backupPath) {
+      Write-Warning "Legacy backup already exists; leaving $legacyName unchanged."
+    } else {
+      Move-Item -LiteralPath $legacyPath -Destination $backupPath
+      Write-Info "Disabled legacy skill $legacyName and preserved it under .gark\legacy-skills"
+    }
+  }
 }
 
 $resolvedCodexPath = Resolve-CodexPath

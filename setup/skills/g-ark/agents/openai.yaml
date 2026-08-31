@@ -1,0 +1,4 @@
+interface:
+  display_name: "G-Ark Knowledge Base"
+  short_description: "检索、引用、沉淀并维护你的 G-Ark 个人知识库"
+  default_prompt: "使用 $g-ark 检索我的知识库，并结合真正相关的笔记回答当前问题。"
